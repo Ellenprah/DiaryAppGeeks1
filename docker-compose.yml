@@ -1,0 +1,43 @@
+version: '3'
+
+networks:
+  web:
+    external: true
+  backend:
+
+services:
+  api:
+    build: ./src/DiaryCollector
+    depends_on:
+    - mongo
+    networks:
+    - web
+    - backend
+    env_file: config.env
+    expose:
+    - "8779"
+    volumes:
+    - ./keys:/keys:rw
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:4.2.6
+    networks:
+    - backend
+    expose:
+    - "27017"
+    env_file: config.env
+    restart: unless-stopped
+
+  fathom:
+    image: usefathom/fathom:latest
+    networks:
+    - web
+    volumes:
+    - ./data/fathom:/data:rw
+    env_file: config.env
+    environment:
+    - "FATHOM_DATABASE_NAME=/data/fathom.db"
+    expose:
+    - "8080"
+    restart: unless-stopped
